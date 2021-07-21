@@ -14,12 +14,12 @@ File can be any name, but must conform to CBF standards.
     """
     pager_client = pager.client(conn_iface(mount_connection()))
     pager_client.upload(path)
-    print 'Booting surgeon.'
+    print ('Booting surgeon.')
 
 
 if len(sys.argv) != 2:
-  print("surgeon.py: Boot a surgeon kernel on a leapfrog device in surgeon mode")
-  print("Syntax: surgeon.py <surgeon_file>")
+  print("surgeon.exe: Boot a surgeon kernel on a leapfrog device in surgeon mode")
+  print("Syntax: surgeon.exe <surgeon_file>")
   sys.exit(1)
 
 do_surgeon_boot(sys.argv[1])
