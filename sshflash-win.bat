@@ -1,10 +1,16 @@
 @echo off
 
+rem *** sshflash-win ***
+rem A fork of sshflash for Windows.  Version 0.1 (26/07/2021) 
+rem
+rem Keys Information -
+rem 
 rem We use a public\private keypair to authenticate.
 rem Surgeon uses the 169.254.8.X subnet to differentiate itself from a fully booted system for safety purposes.
 SET SSH=ssh -i .\keys\id_rsa root@169.254.8.1
+
 rem Fix the permissions on the "private key" , so ssh does not complain.
-rem Not required on Windows so is commented out here.
+rem sshflash-win - Not required on Windows so is commented out here.
 rem chmod 700 keys\id_rsa
 
 call :show_warning
@@ -17,9 +23,6 @@ if /I "%REPLY%" == "2" (SET prefix="lf1000_")
 if /I "%REPLY%" == "3" (SET prefix="lf2000_")
 if /I "%REPLY%" == "4" (SET prefix="lf3000_")
 timeout /t 2
-echo(
-echo %prefix%
-echo(
 
 IF /I "%prefix%" == "lf3000_" (call :flash_mmc "%prefix%") ELSE (call :flash_nand "%prefix%")
 EXIT /B %ERRORLEVEL%
@@ -27,16 +30,20 @@ EXIT /B %ERRORLEVEL%
 
 :show_warning
 cls
-echo Leapster flash utility - installs a custom OS on your leapster!
+echo sshflash-win ver 0.1 - Installs a custom OS on your leapster!
 echo(
 echo WARNING! This utility will ERASE the stock leapster OS and any other
 echo data on the device. The device can be restored to stock settings using
 echo the LeapFrog Connect app. Note that flashing your device will likely
 echo VOID YOUR WARRANTY! Proceed at your own risk.
 echo(
-echo Please power off your leapster, hold the L + R shoulder buttons (LeapsterGS), 
-echo or right arrow + home buttons (LeapPad2), and then press power.
-echo You should see a screen with a green background.
+echo Please power off your device, and do the following -
+echo
+echo LeapsterGS - Hold the L + R shoulder buttons whilst powering on 
+echo LeapPad2 - Hold the Right arrow + Home buttons whilst powering on.
+echo
+echo You should see a screen with a green background and a picture of the device
+echo connecting to a computer.
 pause
 EXIT /B 0
 
@@ -182,3 +189,5 @@ EXIT /B 0
   timeout /t 3
   %SSH% '/sbin/reboot'
 EXIT /B 0
+
+
