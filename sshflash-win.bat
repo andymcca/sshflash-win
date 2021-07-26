@@ -68,13 +68,14 @@ rem Probe for filesystem partition locations, they can vary based on kernel vers
 rem TODO- Make the escaping less yucky...
 
 SET SPACE=" "
-SET KP=awk -e `\\$4 ~ /\"Kernel\"/ {print \"/dev/\" substr(\\$1, 1, length(\\$1)-1)}` /proc/mtd
-SET "var=%SSH%%SPACE:"=%%KP%"
-FOR /f %%i in (%var%) do set "KERNEL_PARTITION=%%i"
+SET KP=awk -e '$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+rem SET "var=%SSH%%SPACE:"=%%KP%"
+rem echo %SSH:"=% "%KP%"
+FOR /f %%i in ('%SSH:"=% "%KP%"') do set "KERNEL_PARTITION=%%i"
 
-SET RP=awk -e `\\$4 ~ /RFS\"/ {print \"/dev/\" substr(\\$1, 1, length(\\$1)-1)}` /proc/mtd
+SET RP=awk -e '$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
 SET "var=%SSH%%SPACE:"=%%RP%"
-FOR /f %%i in (%var%) do set "RFS_PARTITION=%%i"
+FOR /f %%i in ('%SSH:"=% "%RP%"') do set "RFS_PARTITION=%%i"
 
 echo "Detected Kernel partition=%KERNEL_PARTITION% RFS Partition=%RFS_PARTITION%"
 EXIT /B 0
@@ -83,7 +84,7 @@ EXIT /B 0
 SET kernel_path=%~1
 echo(
 echo "Flashing the kernel...
-%SSH% "\usr\sbin\flash_erase %KERNEL_PARTITION% 0 0"
+%SSH% "/usr/sbin/flash_erase %KERNEL_PARTITION% 0 0"
 type %kernel_path% | %SSH% "/usr/sbin/nandwrite -p" %KERNEL_PARTITION% "-"
 echo Done flashing the kernel!
 EXIT /B 0
@@ -91,20 +92,21 @@ EXIT /B 0
 :nand_flash_rfs
 SET rfs_path=%~1
 echo Flashing the root filesystem...
-%SSH% "\usr\sbin\ubiformat -y %RFS_PARTITION%"
-%SSH% "\usr\sbin\ubiattach -p %RFS_PARTITION%"
+%SSH% "/usr/sbin/ubiformat -y %RFS_PARTITION%"
+%SSH% "/usr/sbin/ubiattach -p %RFS_PARTITION%"
 timeout /t 1
-%SSH% "\usr\sbin\ubimkvol \dev\ubi0 -N RFS -m"
+%SSH% "/usr/sbin/ubimkvol /dev/ubi0 -N RFS -m"
 timeout /t 1
-%SSH% "mount -t ubifs \dev\ubi0_0 \mnt\root"
+%SSH% "mount -t ubifs /dev/ubi0_0 /mnt/root"
 echo Writing rootfs image...
+
 rem Note: We used to use a ubifs image here, but now use a .tar.gz.
 rem This removes the need to care about PEB/LEB sizes at build time,
 rem which is important as some LF2000 models Ultra XDi have differing sizes.
-echo Writing rootfs image... 
-type $rfs_path | %SSH% "gunzip -c | tar x -f '-' -C /mnt/root"
-%SSH% "umount \mnt\root"
-%SSH% "\usr\sbin\ubidetach -d 0"
+
+type %rfs_path% | %SSH% "gunzip -c | tar x -f '-' -C /mnt/root"
+%SSH% "umount /mnt/root"
+%SSH% "/usr/sbin/ubidetach -d 0"
 timeout /t 3
 echo(
 echo Done flashing the root filesystem!
@@ -180,5 +182,3 @@ EXIT /B 0
   timeout /t 3
   %SSH% '/sbin/reboot'
 EXIT /B 0
-
-
