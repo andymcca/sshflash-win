@@ -90,7 +90,7 @@ EXIT /B 0
 :nand_flash_kernel
 SET kernel_path=%~1
 echo(
-echo "Flashing the kernel...
+echo "Flashing the kernel...(%kernel_path%)
 %SSH% "/usr/sbin/flash_erase %KERNEL_PARTITION% 0 0"
 type %kernel_path% | %SSH% "/usr/sbin/nandwrite -p" %KERNEL_PARTITION% "-"
 echo Done flashing the kernel!
@@ -130,16 +130,17 @@ EXIT /B 0
 
 :flash_nand
   SET prefix=%~1
-  if /I "%prefix%" == "lf1000_*" (set memloc="high") else (set memloc="superhigh")
-  if /I "%prefix%" == "lf1000_*" (set kernel="zImage_tmp.cbf") else (set kernel="%prefix:"=%uImage")
-  if /I "%prefix%" == "lf1000_*" (make_cbf.exe %memloc:"=% %prefix:"=%zImage %kernel:"=%)
-  echo Debugging info - 
-  echo(
-  echo %memloc:"=%
-  echo %prefix:"=%zImage
-  echo %kernel:"=%
-  echo(
-  
+  if /I %prefix:"=% == lf1000_ (set memloc="high") else (set memloc="superhigh")
+  if /I %prefix:"=% == lf1000_ (set kernel="zImage_tmp.cbf") else (set kernel="%prefix:"=%uImage")
+  if /I %prefix:"=% == lf1000_ (make_cbf.exe %memloc:"=% %prefix:"=%zImage %kernel:"=%)
+  rem echo Debugging info - 
+  rem echo(
+  rem echo %memloc:"=%
+  rem echo %prefix:"=%zImage
+  rem echo %kernel:"=%
+  rem echo(
+  rem pause
+
   call :boot_surgeon %prefix:"=%surgeon_zImage %memloc:"=%
   rem For the first ssh command, skip hostkey checking to avoid prompting the user.
   %SSH% -o "StrictHostKeyChecking no" 'test'
