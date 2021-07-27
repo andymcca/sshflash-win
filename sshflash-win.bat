@@ -38,10 +38,10 @@ echo the LeapFrog Connect app. Note that flashing your device will likely
 echo VOID YOUR WARRANTY! Proceed at your own risk.
 echo(
 echo Please power off your device, and do the following -
-echo
+echo(
 echo LeapsterGS - Hold the L + R shoulder buttons whilst powering on 
 echo LeapPad2 - Hold the Right arrow + Home buttons whilst powering on.
-echo
+echo(
 echo You should see a screen with a green background and a picture of the device
 echo connecting to a computer.
 pause
