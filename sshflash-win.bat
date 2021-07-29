@@ -1,7 +1,8 @@
 @echo off
 
 rem *** sshflash-win ***
-rem A fork of sshflash for Windows.  Version 0.1 (26/07/2021) 
+rem A fork of sshflash for Windows, by andymcca.  sshflash originally by mac2612 (https://github.com/mac2612/sshflash).
+rem Version 0.1 (26/07/2021) 
 rem
 rem Keys Information -
 rem 
@@ -30,7 +31,8 @@ EXIT /B %ERRORLEVEL%
 
 :show_warning
 cls
-echo sshflash-win ver 0.1 - Installs a custom OS on your leapster!
+echo sshflash-win ver 0.1 (forked from sshflash by mac2612 - https://github.com/mac2612/sshflash)
+echo Installs a custom OS on your LeapPad/Leapster!
 echo(
 echo WARNING! This utility will ERASE the stock leapster OS and any other
 echo data on the device. The device can be restored to stock settings using
@@ -39,6 +41,7 @@ echo VOID YOUR WARRANTY! Proceed at your own risk.
 echo(
 echo Please power off your device, and do the following -
 echo(
+echo Leapster Explorer - Hold the L + R shoulder buttons AND the Hint (?) button whilst powering on
 echo LeapsterGS - Hold the L + R shoulder buttons whilst powering on 
 echo LeapPad2 - Hold the Right arrow + Home buttons whilst powering on.
 echo(
