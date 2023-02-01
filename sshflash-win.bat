@@ -2,13 +2,13 @@
 
 rem *** sshflash-win ***
 rem A fork of sshflash for Windows, by andymcca.  sshflash originally by mac2612 (https://github.com/mac2612/sshflash).
-rem Version 0.1 (26/07/2021) 
+rem Version 0.3 (2023-02-01) 
 rem
 rem Keys Information -
 rem 
-rem We use a public\private keypair to authenticate.
-rem Surgeon uses the 169.254.8.X subnet to differentiate itself from a fully booted system for safety purposes.
-SET SSH=ssh -i .\keys\id_rsa root@169.254.8.1
+rem As of version 0.3, keys are no longer used to connect via SSH.
+rem This reflects the upcoming change in retroleap to remove key-based access, as the RSA standard is deprecated and this was causing issues with flashing.
+SET SSH=ssh root@169.254.8.1
 
 rem Fix the permissions on the "private key" , so ssh does not complain.
 rem sshflash-win - Not required on Windows so is commented out here.
@@ -31,7 +31,7 @@ EXIT /B %ERRORLEVEL%
 
 :show_warning
 cls
-echo sshflash-win ver 0.1 (forked from sshflash by mac2612 - https://github.com/mac2612/sshflash)
+echo sshflash-win ver 0.3 (forked from sshflash by mac2612 - https://github.com/mac2612/sshflash)
 echo Installs a custom OS on your LeapPad/Leapster!
 echo(
 echo WARNING! This utility will ERASE the stock leapster OS and any other
