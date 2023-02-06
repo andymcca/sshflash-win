@@ -61,65 +61,73 @@ echo 4. LF3000 (LeapPad 3, LeapPad Platinum)
 EXIT /B 0
 
 :boot_surgeon
-SET surgeon_path=%~1
-SET memloc=%~2
-echo Booting the Surgeon environment...
-make_cbf.exe %memloc:"=% %surgeon_path:"=% surgeon_tmp.cbf
-echo Lines to write (should be a whole number) -
-boot_surgeon.exe surgeon_tmp.cbf
-echo Done! Waiting for Surgeon to come up...
-DEL surgeon_tmp.cbf
-timeout /t 15
-echo Done!
+  SET surgeon_path=%~1
+  SET memloc=%~2
+  echo Booting the Surgeon environment...
+  make_cbf.exe %memloc:"=% %surgeon_path:"=% surgeon_tmp.cbf
+  echo Lines to write (should be a whole number) -
+  boot_surgeon.exe surgeon_tmp.cbf
+  echo Done! Waiting for Surgeon to come up...
+  DEL surgeon_tmp.cbf
+  timeout /t 15
+  echo Done!
 EXIT /B 0
 
 :nand_part_detect
-rem Probe for filesystem partition locations, they can vary based on kernel version + presence of NOR flash drivers.
-rem TODO- Make the escaping less yucky...
+  rem Probe for filesystem partition locations, they can vary based on kernel version + presence of NOR flash drivers.
+  rem TODO- Make the escaping less yucky...
 
-SET SPACE=" "
-SET KP=awk -e '$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
-rem SET "var=%SSH%%SPACE:"=%%KP%"
-rem echo %SSH:"=% "%KP%"
-FOR /f %%i in ('%SSH:"=% "%KP%"') do set "KERNEL_PARTITION=%%i"
+  SET SPACE=" "
+  SET KP=awk -e '$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+  rem SET "var=%SSH%%SPACE:"=%%KP%"
+  rem echo %SSH:"=% "%KP%"
+  FOR /f %%i in ('%SSH:"=% "%KP%"') do set "KERNEL_PARTITION=%%i"
 
-SET RP=awk -e '$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
-SET "var=%SSH%%SPACE:"=%%RP%"
-FOR /f %%i in ('%SSH:"=% "%RP%"') do set "RFS_PARTITION=%%i"
+  SET RP=awk -e '$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+  SET "var=%SSH%%SPACE:"=%%RP%"
+  FOR /f %%i in ('%SSH:"=% "%RP%"') do set "RFS_PARTITION=%%i"
 
-echo "Detected Kernel partition=%KERNEL_PARTITION% RFS Partition=%RFS_PARTITION%"
+  echo "Detected Kernel partition=%KERNEL_PARTITION% RFS Partition=%RFS_PARTITION%"
 EXIT /B 0
 
 :nand_flash_kernel
-SET kernel_path=%~1
-echo(
-echo "Flashing the kernel...(%kernel_path%)
-%SSH% "/usr/sbin/flash_erase %KERNEL_PARTITION% 0 0"
-type %kernel_path% | %SSH% "/usr/sbin/nandwrite -p" %KERNEL_PARTITION% "-"
-echo Done flashing the kernel!
+  echo Do you want to flash the Kernel? (You should do this on the first flash of retroleap) (y/n): 
+  SET /P REPLY=
+  if /I "%REPLY%" == "y" (
+    SET kernel_path=%~1
+    echo(
+    echo "Flashing the kernel...(%kernel_path%)
+    %SSH% "/usr/sbin/flash_erase %KERNEL_PARTITION% 0 0"
+    type %kernel_path% | %SSH% "/usr/sbin/nandwrite -p" %KERNEL_PARTITION% "-"
+    echo Done flashing the kernel!
+  )
 EXIT /B 0
 
 :nand_flash_rfs
-SET rfs_path=%~1
-echo Flashing the root filesystem...
-%SSH% "/usr/sbin/ubiformat -y %RFS_PARTITION%"
-%SSH% "/usr/sbin/ubiattach -p %RFS_PARTITION%"
-timeout /t 1
-%SSH% "/usr/sbin/ubimkvol /dev/ubi0 -N RFS -m"
-timeout /t 1
-%SSH% "mount -t ubifs /dev/ubi0_0 /mnt/root"
-echo Writing rootfs image...
+  echo Do you want to flash the root filesystem? (You should do this on the first flash of retroleap) (y/n): 
+  SET /P REPLY=
+  if /I "%REPLY%" == "y" (
+    SET rfs_path=%~1
+    echo Flashing the root filesystem...
+    %SSH% "/usr/sbin/ubiformat -y %RFS_PARTITION%"
+    %SSH% "/usr/sbin/ubiattach -p %RFS_PARTITION%"
+    timeout /t 1
+    %SSH% "/usr/sbin/ubimkvol /dev/ubi0 -N RFS -m"
+    timeout /t 1
+    %SSH% "mount -t ubifs /dev/ubi0_0 /mnt/root"
+    echo Writing rootfs image...
 
-rem Note: We used to use a ubifs image here, but now use a .tar.gz.
-rem This removes the need to care about PEB/LEB sizes at build time,
-rem which is important as some LF2000 models Ultra XDi have differing sizes.
+    rem Note: We used to use a ubifs image here, but now use a .tar.gz.
+    rem This removes the need to care about PEB/LEB sizes at build time,
+    rem which is important as some LF2000 models Ultra XDi have differing sizes.
 
-type %rfs_path% | %SSH% "gunzip -c | tar x -f '-' -C /mnt/root"
-%SSH% "umount /mnt/root"
-%SSH% "/usr/sbin/ubidetach -d 0"
-timeout /t 3
-echo(
-echo Done flashing the root filesystem!
+    type %rfs_path% | %SSH% "gunzip -c | tar x -f '-' -C /mnt/root"
+    %SSH% "umount /mnt/root"
+    %SSH% "/usr/sbin/ubidetach -d 0"
+    timeout /t 3
+    echo(
+    echo Done flashing the root filesystem!
+  )
 EXIT /B 0
 
 :nand_maybe_wipe_roms
