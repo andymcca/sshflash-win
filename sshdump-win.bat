@@ -6,13 +6,9 @@ rem Version 0.3 (2023-02-01)
 rem
 rem Keys Information -
 rem 
-rem As of version 0.3, keys are no longer used to connect via SSH.
+rem As of version 0.3, keys are used to connect via SSH.
 rem This reflects the upcoming change in retroleap to remove key-based access, as the RSA standard is deprecated and this was causing issues with dumping.
-SET SSH=ssh root@169.254.8.1
-
-rem Fix the permissions on the "private key", so ssh does not complain.
-rem sshdump-win - Not required on Windows so is commented out here.
-rem chmod 700 keys\id_rsa
+SET SSH=ssh -i keys\id_rsa root@169.254.8.1
 
 call :show_warning
 SET prefix=%~1
@@ -25,7 +21,14 @@ if /I "%REPLY%" == "3" (SET prefix="lf2000_")
 if /I "%REPLY%" == "4" (SET prefix="lf3000_")
 timeout /t 2
 
-IF /I "%prefix%" == "lf3000_" (call :dump_mmc "%prefix%") ELSE (call :dump_nand "%prefix%")
+echo.
+echo Choose dump option:
+echo 1. Dump Operating System (OS) only
+echo 2. Dump Entire Root of Device (Warning: May exceed 1GB)
+echo.
+SET /P DUMP_OPTION="Enter option (1 or 2): "
+
+IF /I "%prefix%" == "lf3000_" (call :dump_mmc "%prefix%" %DUMP_OPTION%) ELSE (call :dump_nand "%prefix%" %DUMP_OPTION%)
 EXIT /B %ERRORLEVEL%
 
 
@@ -37,6 +40,8 @@ echo(
 echo WARNING! This utility will ERASE the dumped data on the device. 
 echo The data can be restored using appropriate tools. 
 echo Ensure you have proper backups before proceeding.
+echo(
+echo WARNING! Dumping the entire root may result in a large file size, potentially exceeding 1GB.
 echo(
 echo Please power off your device, and do the following -
 echo(
@@ -60,16 +65,16 @@ echo 4. LF3000 (LeapPad 3, LeapPad Platinum)
 EXIT /B 0
 
 :boot_surgeon
-  SET surgeon_path=%~1
-  SET memloc=%~2
-  echo Booting the Surgeon environment...
-  make_cbf.exe %memloc:"=% %surgeon_path:"=% surgeon_tmp.cbf
-  echo Lines to write (should be a whole number) -
-  boot_surgeon.exe surgeon_tmp.cbf
-  echo Done! Waiting for Surgeon to come up...
-  DEL surgeon_tmp.cbf
-  timeout /t 15
-  echo Done!
+SET surgeon_path=%~1
+SET memloc=%~2
+echo Booting the Surgeon environment...
+make_cbf.exe %memloc:"=% %surgeon_path:"=% surgeon_tmp.cbf
+echo Lines to write (should be a whole number) -
+boot_surgeon.exe surgeon_tmp.cbf
+echo Done! Waiting for Surgeon to come up...
+DEL surgeon_tmp.cbf
+timeout /t 15
+echo Done!
 EXIT /B 0
 
 :nand_part_detect
@@ -89,45 +94,54 @@ EXIT /B 0
   echo "Detected Kernel partition=%KERNEL_PARTITION% RFS Partition=%RFS_PARTITION%"
 EXIT /B 0
 
-:dump_os
-  rem Function to dump the operating system.
-  rem Add commands here to dump the OS from the device.
-  rem Replace the comments with actual commands.
-  rem Example:
-  rem %SSH% "dump_os_command_here"
-  echo Dumping the operating system...
-  echo OS dumped successfully!
+:nand_dump_os
+  echo Dumping the Operating System...
+  %SSH% "dd if=%KERNEL_PARTITION% of=OS_dump.bin bs=1M count=50"
+  echo Done dumping the Operating System!
 EXIT /B 0
 
-:dump_other_data
-  rem Function to dump other data from the device.
-  rem Add commands here to dump specific data.
-  rem Replace the comments with actual commands.
-  rem Example:
-  rem %SSH% "dump_data_command_here"
-  echo Dumping other data...
-  echo Other data dumped successfully!
+:nand_dump_root
+  echo Dumping the Entire Root of the Device...
+  %SSH% "tar czvf root_dump.tar.gz /"
+  echo Done dumping the Entire Root of the Device!
 EXIT /B 0
 
 :dump_nand
-  rem Function to dump data from NAND-based devices.
   SET prefix=%~1
-  call :boot_surgeon %prefix:"=%surgeon_zImage superhigh
+  SET dump_option=%~2
+  if /I %prefix:"=% == lf1000_ (set memloc="high") else (set memloc="superhigh")
+
+  call :boot_surgeon %prefix:"=%surgeon_zImage %memloc:"=%
   rem For the first ssh command, skip hostkey checking to avoid prompting the user.
   %SSH% -o "StrictHostKeyChecking no" 'test'
   call :nand_part_detect
-  call :dump_os
-  call :dump_other_data
-  echo Done! Exiting.
+  
+  if /I "%dump_option%" == "1" (call :nand_dump_os) else (call :nand_dump_root)
+
+  echo Done! Rebooting the host.
+  %SSH% '/sbin/reboot'
+EXIT /B 0
+
+:mmc_dump_os
+  echo Dumping the Operating System...
+  %SSH% "dd if=/dev/mmcblk0 of=OS_dump.bin bs=1M count=50"
+  echo Done dumping the Operating System!
+EXIT /B 0
+
+:mmc_dump_root
+  echo Dumping the Entire Root of the Device...
+  %SSH% "tar czvf root_dump.tar.gz /"
+  echo Done dumping the Entire Root of the Device!
 EXIT /B 0
 
 :dump_mmc
-  rem Function to dump data from MMC-based devices.
   SET prefix=%~1
+  SET dump_option=%~2
   call :boot_surgeon %prefix%surgeon_zImage superhigh
   rem For the first ssh command, skip hostkey checking to avoid prompting the user.
   %SSH% -o "StrictHostKeyChecking no" 'test'
-  call :dump_os
-  call :dump_other_data
-  echo Done! Exiting.
+  if /I "%dump_option%" == "1" (call :mmc_dump_os) else (call :mmc_dump_root)
+
+  echo Done! Rebooting the host.
+  %SSH% '/sbin/reboot'
 EXIT /B 0
