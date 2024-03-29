@@ -6,8 +6,9 @@ rem Version 0.3 (2023-02-01)
 rem
 rem Keys Information -
 rem 
-rem As of version 0.3, keys are used to connect via SSH.
-SET SSH=ssh -i keys\id_rsa root@169.254.8.1
+rem As of version 0.3, keys are not used to connect via SSH.
+
+SET SSH=ssh root@169.254.8.1
 
 call :show_warning
 SET prefix=%~1
@@ -77,70 +78,70 @@ echo Done!
 EXIT /B 0
 
 :nand_part_detect
-  rem Probe for filesystem partition locations, they can vary based on kernel version + presence of NOR flash drivers.
-  rem TODO- Make the escaping less yucky...
+rem Probe for filesystem partition locations, they can vary based on kernel version + presence of NOR flash drivers.
+rem TODO- Make the escaping less yucky...
 
-  SET SPACE=" "
-  SET KP=awk -e '$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
-  rem SET "var=%SSH%%SPACE:"=%%KP%"
-  rem echo %SSH:"=% "%KP%"
-  FOR /f %%i in ('%SSH:"=% "%KP%"') do set "KERNEL_PARTITION=%%i"
+SET SPACE=" "
+SET KP=awk -e '$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+rem SET "var=%SSH%%SPACE:"=%%KP%"
+rem echo %SSH:"=% "%KP%"
+FOR /f %%i in ('%SSH:"=% "%KP%"') do set "KERNEL_PARTITION=%%i"
 
-  SET RP=awk -e '$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
-  SET "var=%SSH%%SPACE:"=%%RP%"
-  FOR /f %%i in ('%SSH:"=% "%RP%"') do set "RFS_PARTITION=%%i"
+SET RP=awk -e '$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+SET "var=%SSH%%SPACE:"=%%RP%"
+FOR /f %%i in ('%SSH:"=% "%RP%"') do set "RFS_PARTITION=%%i"
 
-  echo "Detected Kernel partition=%KERNEL_PARTITION% RFS Partition=%RFS_PARTITION%"
+echo "Detected Kernel partition=%KERNEL_PARTITION% RFS Partition=%RFS_PARTITION%"
 EXIT /B 0
 
 :nand_dump_os
-  echo Dumping the Operating System...
-  %SSH% "dd if=%KERNEL_PARTITION% of=OS_dump.bin bs=1M count=50"
-  echo Done dumping the Operating System!
+echo Dumping the Operating System...
+%SSH% "dd if=%KERNEL_PARTITION% of=OS_dump.bin bs=1M count=50"
+echo Done dumping the Operating System!
 EXIT /B 0
 
 :nand_dump_root
-  echo Dumping the Entire Root of the Device...
-  %SSH% "tar czvf root_dump.tar.gz /"
-  echo Done dumping the Entire Root of the Device!
+echo Dumping the Entire Root of the Device...
+%SSH% "tar czvf root_dump.tar.gz /"
+echo Done dumping the Entire Root of the Device!
 EXIT /B 0
 
 :dump_nand
-  SET prefix=%~1
-  SET dump_option=%~2
-  if /I %prefix:"=% == lf1000_ (set memloc="high") else (set memloc="superhigh")
+SET prefix=%~1
+SET dump_option=%~2
+if /I %prefix:"=% == lf1000_ (set memloc="high") else (set memloc="superhigh")
 
-  call :boot_surgeon %prefix:"=%surgeon_zImage %memloc:"=%
-  rem For the first ssh command, skip hostkey checking to avoid prompting the user.
-  %SSH% -o "StrictHostKeyChecking no" 'test'
-  call :nand_part_detect
+call :boot_surgeon %prefix:"=%surgeon_zImage %memloc:"=%
+rem For the first ssh command, skip hostkey checking to avoid prompting the user.
+%SSH% -o "StrictHostKeyChecking no" 'test'
+call :nand_part_detect
   
-  if /I "%dump_option%" == "1" (call :nand_dump_os) else (call :nand_dump_root)
+if /I "%dump_option%" == "1" (call :nand_dump_os) else (call :nand_dump_root)
 
-  echo Done! Rebooting the host.
-  %SSH% '/sbin/reboot'
+echo Done! Rebooting the host.
+%SSH% '/sbin/reboot'
 EXIT /B 0
 
 :mmc_dump_os
-  echo Dumping the Operating System...
-  %SSH% "dd if=/dev/mmcblk0 of=OS_dump.bin bs=1M count=50"
-  echo Done dumping the Operating System!
+echo Dumping the Operating System...
+%SSH% "dd if=/dev/mmcblk0 of=OS_dump.bin bs=1M count=50"
+echo Done dumping the Operating System!
 EXIT /B 0
 
 :mmc_dump_root
-  echo Dumping the Entire Root of the Device...
-  %SSH% "tar czvf root_dump.tar.gz /"
-  echo Done dumping the Entire Root of the Device!
+echo Dumping the Entire Root of the Device...
+%SSH% "tar czvf root_dump.tar.gz /"
+echo Done dumping the Entire Root of the Device!
 EXIT /B 0
 
 :dump_mmc
-  SET prefix=%~1
-  SET dump_option=%~2
-  call :boot_surgeon %prefix%surgeon_zImage superhigh
-  rem For the first ssh command, skip hostkey checking to avoid prompting the user.
-  %SSH% -o "StrictHostKeyChecking no" 'test'
-  if /I "%dump_option%" == "1" (call :mmc_dump_os) else (call :mmc_dump_root)
+SET prefix=%~1
+SET dump_option=%~2
+call :boot_surgeon %prefix%surgeon_zImage superhigh
+rem For the first ssh command, skip hostkey checking to avoid prompting the user.
+%SSH% -o "StrictHostKeyChecking no" 'test'
+if /I "%dump_option%" == "1" (call :mmc_dump_os) else (call :mmc_dump_root)
 
-  echo Done! Rebooting the host.
-  %SSH% '/sbin/reboot'
+echo Done! Rebooting the host.
+%SSH% '/sbin/reboot'
 EXIT /B 0
