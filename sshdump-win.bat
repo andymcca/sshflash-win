@@ -1,7 +1,7 @@
 @echo off
 
 rem *** sshdump-win ***
-rem A fork of sshdump for Windows, by andymcca. sshdump originally by mac2612 (https://github.com/mac2612/sshdump).
+rem A fork of sshflash for Windows, by andymcca. sshflash originally by mac2612 (https://github.com/mac2612/sshdump).
 rem Version 0.3 (2023-02-01) 
 rem
 rem Keys Information -
