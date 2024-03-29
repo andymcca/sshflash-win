@@ -7,7 +7,6 @@ rem
 rem Keys Information -
 rem 
 rem As of version 0.3, keys are used to connect via SSH.
-rem This reflects the upcoming change in retroleap to remove key-based access, as the RSA standard is deprecated and this was causing issues with dumping.
 SET SSH=ssh -i keys\id_rsa root@169.254.8.1
 
 call :show_warning
