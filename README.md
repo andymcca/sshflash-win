@@ -1,15 +1,42 @@
-# sshflash-win
+# sshdump-win
 
-Forked from sshflash.
+sshdump-win is a Windows batch script utility designed for dumping the operating system and other data from LeapPad/Leapster devices using SSH.
 
-A version of sshflash to be packaged and released for use with Windows.
+## Overview
 
-Focussed on relative accessibilty/reliabilty for Windows users, with the ultimate aim being the ability to flash a supported Leapfrog device in a single operation without the additional installation of dependancies or implementation of workarounds.  
-  
-To use, you will also need release files from Retroleap (mac2612 / retroleap).  Currently, this tool only supports Retroleap versions 2.0.0 upwards.
+This utility enables users to dump the operating system and other data from LeapPad/Leapster devices via SSH connection. It is particularly useful for creating backups of the device's data or extracting specific information for analysis.
 
-You will also need OpenSSH version 8.1 or below installed - https://github.com/PowerShell/Win32-OpenSSH/releases/tag/v8.1.0.0p1-Beta.
+## Features
 
-Please check the releases section and use the latest release, noting any workarounds or caveats currently in place!
+- Dump the operating system from LeapPad/Leapster devices.
+- Dump other data from the device as required.
+- Supports both NAND-based and MMC-based devices.
+- Simple and easy-to-use Windows batch script.
 
-Also, as this port is still in the very early stages of development, please use at your own risk!
+## Prerequisites
+
+- Windows operating system.
+- SSH client installed (e.g., OpenSSH, PuTTY).
+- LeapPad/Leapster device connected to the same network.
+
+## Usage
+
+1. Ensure your LeapPad/Leapster device is powered off.
+2. Connect your device to the same network as your computer.
+3. Run `sshdump-win.bat` script.
+4. Follow the on-screen instructions to select the device type and initiate the dumping process.
+5. Once the dumping process is complete, the data will be saved in the specified directory.
+
+## Warning
+
+- The utility will ERASE the dumped data on the device. Ensure you have proper backups before proceeding.
+- Use this utility at your own risk. We are not responsible for any data loss or damage to your device.
+
+## Acknowledgements
+
+- This script is a fork of the original sshdump by mac2612. Thanks to mac2612 for the initial work.
+- Special thanks to andymcca for adapting sshdump for Windows.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
