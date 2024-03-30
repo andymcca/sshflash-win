@@ -29,7 +29,6 @@ This utility enables users to dump the operating system and other data from Leap
 
 ## Warning
 
-- The utility will ERASE the dumped data on the device. Ensure you have proper backups before proceeding.
 - Use this utility at your own risk. We are not responsible for any data loss or damage to your device.
 
 ## Acknowledgements
