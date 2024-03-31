@@ -34,11 +34,9 @@ EXIT /B %ERRORLEVEL%
 
 :show_warning
 cls
-echo sshdump-win ver 0.3 (forked from sshdump by mac2612 - https://github.com/mac2612/sshdump)
+echo sshdump-win ver 0.3 (forked from sshflashing by mac2612 - https://github.com/mac2612/sshdump)
 echo Dumps the operating system and data from your LeapPad/Leapster!
 echo(
-echo WARNING! This utility will ERASE the dumped data on the device. 
-echo Ensure you have proper backups before proceeding.
 echo(
 echo WARNING! Dumping the entire root may result in a large file size, potentially exceeding 1GB.
 echo(
