@@ -38,7 +38,6 @@ echo sshdump-win ver 0.3 (forked from sshdump by mac2612 - https://github.com/ma
 echo Dumps the operating system and data from your LeapPad/Leapster!
 echo(
 echo WARNING! This utility will ERASE the dumped data on the device. 
-echo The data can be restored using appropriate tools. 
 echo Ensure you have proper backups before proceeding.
 echo(
 echo WARNING! Dumping the entire root may result in a large file size, potentially exceeding 1GB.
@@ -82,12 +81,12 @@ rem Probe for filesystem partition locations, they can vary based on kernel vers
 rem TODO- Make the escaping less yucky...
 
 SET SPACE=" "
-SET KP=awk -e '$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+SET KP=awk -e "$4 ~ \"Kernel\"  {print \"/dev/\" substr($1, 1, length($1)-1)}" /proc/mtd
 rem SET "var=%SSH%%SPACE:"=%%KP%"
 rem echo %SSH:"=% "%KP%"
 FOR /f %%i in ('%SSH:"=% "%KP%"') do set "KERNEL_PARTITION=%%i"
 
-SET RP=awk -e '$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}' /proc/mtd
+SET RP=awk -e "$4 ~ \"RFS\"  {print \"/dev/\" substr($1, 1, length($1)-1)}" /proc/mtd
 SET "var=%SSH%%SPACE:"=%%RP%"
 FOR /f %%i in ('%SSH:"=% "%RP%"') do set "RFS_PARTITION=%%i"
 
