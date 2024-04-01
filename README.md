@@ -2,6 +2,8 @@
 
 sshdump-win is a Windows batch script utility designed for dumping the operating system and other data from LeapPad/Leapster devices using SSH.
 
+## Not working
+
 ## Overview
 
 This utility enables users to dump the operating system and other data from LeapPad/Leapster devices via SSH connection. It is particularly useful for creating backups of the device's data or extracting specific information for analysis.
